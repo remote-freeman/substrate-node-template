@@ -20,12 +20,12 @@ use pallet_contracts::weights::WeightInfo;
 use pallet_contracts_primitives::ContractExecResult;
 
 // contracts example related
-// use codec::{Encode, Decode};
-// use frame_support::debug::{error, native};
-// use pallet_contracts::chain_extension::{
-//     ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
-// };
-// use sp_runtime::DispatchError;
+use codec::{Encode, Decode};
+use frame_support::debug::{error, native};
+use pallet_contracts::chain_extension::{
+    ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+};
+use sp_runtime::DispatchError;
 
 
 use sp_api::impl_runtime_apis;
@@ -289,40 +289,40 @@ const fn deposit(items: u32, bytes: u32) -> Balance {
 }
 
 // contract extension for `FetchRandom`
-// pub struct FetchRandomExtension;
+pub struct FetchRandomExtension;
 
-// impl ChainExtension<Runtime> for FetchRandomExtension {
-//     fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-//         where
-//             <E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-//     {
+impl ChainExtension<Runtime> for FetchRandomExtension {
+    fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+        where
+            <E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+    {
 
-//         match func_id {
-//             1101 => {
-//                 let mut env = env.buf_in_buf_out();
-//                 let random_seed: [u8; 32] = RandomnessCollectiveFlip::random_seed().0;
-//                 let random_slice = random_seed.encode();
-//                 native::trace!(
-//                     target: "runtime",
-//                     "[ChainExtension]|call|func_id:{:}",
-//                     func_id
-//                 );
-//                 env.write(&random_slice, false, None)
-//                     .map_err(|_| DispatchError::Other("ChainExtension failed to call random"))?;
-//             }
+        match func_id {
+            1101 => {
+                let mut env = env.buf_in_buf_out();
+                let random_seed: [u8; 32] = RandomnessCollectiveFlip::random_seed().0;
+                let random_slice = random_seed.encode();
+                native::trace!(
+                    target: "runtime",
+                    "[ChainExtension]|call|func_id:{:}",
+                    func_id
+                );
+                env.write(&random_slice, false, None)
+                    .map_err(|_| DispatchError::Other("ChainExtension failed to call random"))?;
+            }
 
-//             _ => {
-//                 error!("call an unregistered `func_id`, func_id:{:}", func_id);
-//                 return Err(DispatchError::Other("Unimplemented func_id"));
-//             }
-//         }
-//         Ok(RetVal::Converging(0))
-//     }
+            _ => {
+                error!("call an unregistered `func_id`, func_id:{:}", func_id);
+                return Err(DispatchError::Other("Unimplemented func_id"));
+            }
+        }
+        Ok(RetVal::Converging(0))
+    }
 
-//     fn enabled() -> bool {
-//         true
-//     }
-// }
+    fn enabled() -> bool {
+        true
+    }
+}
 
 parameter_types! {
     pub const TombstoneDeposit: Balance = deposit(
@@ -366,7 +366,7 @@ impl pallet_contracts::Config for Runtime {
     type MaxValueSize = MaxValueSize;
     type WeightPrice = pallet_transaction_payment::Module<Self>;
     type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-    type ChainExtension = ();
+    type ChainExtension = FetchRandomExtension;
     type DeletionQueueDepth = DeletionQueueDepth;
     type DeletionWeightLimit = DeletionWeightLimit;
     type MaxCodeSize = MaxCodeSize;
